@@ -4,11 +4,15 @@ import { Post, POSTS } from 'src/Database';
 @Injectable()
 export class PostsService {
   private readonly Posts: Post[] = POSTS;
+
   getAllPosts(): Post[] {
     return POSTS;
   }
   addPost(post: Omit<Post, 'id'>): Post {
-    const newPost: Post = { id: String(new Date().getTime()), ...post };
+    const newPost: Post = {
+      id: String(new Date().getTime()),
+      ...post,
+    };
     this.Posts.push(newPost);
     return newPost;
   }

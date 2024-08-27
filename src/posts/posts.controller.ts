@@ -9,10 +9,14 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostDto } from './post.dto';
+import { CommentsService } from './comments/comments.service';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private postService: PostsService) {}
+  constructor(
+    private postService: PostsService,
+    private commentService: CommentsService,
+  ) {}
   @Get()
   getAllPosts() {
     return this.postService.getAllPosts();
@@ -26,6 +30,8 @@ export class PostsController {
 
   @Get(':id')
   getPostById(@Param('id') id: string) {
-    return this.postService.getPostById(id);
+    const Post = this.postService.getPostById(id);
+    const comments = this.commentService.getCommentsByPostId(id);
+    return { ...Post, comments };
   }
 }

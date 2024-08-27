@@ -8,16 +8,12 @@ export class PostDto {
 
   @IsNotEmpty()
   user: string;
-
-  likes: string[];
-
-  comments: Comment[];
 }
 
-class Comment {
-  @IsNotEmpty()
-  user: string;
+// class Comment {
+//   @IsNotEmpty()
+//   user: string;
 
-  @IsNotEmpty()
-  comment: string;
-}
+//   @IsNotEmpty()
+//   comment: string;
+// }
