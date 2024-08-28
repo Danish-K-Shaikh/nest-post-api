@@ -5,9 +5,6 @@ export class PostDto {
 
   @IsNotEmpty()
   content: string;
-
-  @IsNotEmpty()
-  user: string;
 }
 
 // class Comment {

@@ -10,6 +10,8 @@ import {
 import { PostsService } from './posts.service';
 import { PostDto } from './post.dto';
 import { CommentsService } from './comments/comments.service';
+import { Public } from 'src/public-strategy';
+import { User } from 'src/user.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -17,6 +19,8 @@ export class PostsController {
     private postService: PostsService,
     private commentService: CommentsService,
   ) {}
+
+  @Public()
   @Get()
   getAllPosts() {
     return this.postService.getAllPosts();
@@ -24,8 +28,8 @@ export class PostsController {
 
   @Post()
   @UsePipes(new ValidationPipe())
-  addPost(@Body() post: PostDto) {
-    return this.postService.addPost(post);
+  addPost(@Body() post: PostDto, @User() user) {
+    return this.postService.addPost({ ...post, user });
   }
 
   @Get(':id')

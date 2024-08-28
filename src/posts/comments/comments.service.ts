@@ -32,8 +32,9 @@ export class CommentsService {
     return { id: newComment.id };
   }
 
-  updateCommentById(commentId: string, commentText: string) {
+  updateCommentById(commentId: string, user: string, commentText: string) {
     const commentObj = this.getCommentById(commentId);
+    if (commentObj.user !== user) throw new HttpException('Forbidden', 403);
     commentObj.comment = commentText;
     return commentObj;
   }
