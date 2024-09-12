@@ -1,41 +1,58 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PostsService } from '../posts.service';
-import { COMMENTS, Comment } from 'src/Database';
+import { InjectModel } from '@nestjs/mongoose';
+import { Comment, CommentFlatDoc } from 'src/schemas/comment.schema';
+import mongoose, { Model, Types } from 'mongoose';
 
 @Injectable()
 export class CommentsService {
-  private readonly Comments: Comment[] = COMMENTS;
-  constructor(private postService: PostsService) {}
+  constructor(
+    private postService: PostsService,
+    @InjectModel(Comment.name) private commentSchema: Model<Comment>,
+  ) {}
 
-  getCommentById(_commentId: string): Comment {
-    const comment = this.Comments.find(({ id }) => id === _commentId);
-    if (!comment) throw new HttpException('Comment not found', 404);
+  async getCommentById(_commentId: string) {
+    const comment = await this.commentSchema.findById(_commentId).lean();
     return comment;
+    // const comment = this.Comments.find(({ id }) => id === _commentId);
+    // if (!comment) throw new HttpException('Comment not found', 404);
+    // return comment;
   }
 
-  getCommentsByPostId(_postId: string) {
-    const post = this.postService.getPostById(_postId);
+  async getCommentsByPostId(_postId: string) {
+    const post = await this.postService.getPostById(_postId);
+    console.log({ _postId, post });
+    // const post = this.postService.getPostById(_postId);
     if (!post) throw new HttpException('Post not found', 404);
-    const comments = this.Comments.filter(({ postId }) => postId === _postId);
-    return comments;
+    return await this.commentSchema.find({ post: post._id });
+    // const comments = this.Comments.filter(({ postId }) => postId === _postId);
+    // return comments;
   }
 
-  addComment(postId: string, commentData: Omit<Comment, 'id' | 'postId'>) {
-    const post = this.postService.getPostById(postId);
+  async addComment(postId: string, commentData) {
+    const post = await this.postService.getPostById(postId);
     if (!post) throw new HttpException('Post not found', 404);
-    const newComment = {
-      id: new Date().getTime() + '',
-      postId,
+    const newComment: CommentFlatDoc = {
+      _id: new mongoose.Types.ObjectId(),
+      post: postId,
       ...commentData,
     };
-    this.Comments.push(newComment);
-    return { id: newComment.id };
+    const newCommentDb = new this.commentSchema(newComment);
+    return newCommentDb.save();
   }
 
-  updateCommentById(commentId: string, user: string, commentText: string) {
-    const commentObj = this.getCommentById(commentId);
-    if (commentObj.user !== user) throw new HttpException('Forbidden', 403);
-    commentObj.comment = commentText;
-    return commentObj;
+  async updateCommentById(
+    commentId: string,
+    user: Types.ObjectId | string,
+    commentText: string,
+  ) {
+    const commentObj = await this.getCommentById(commentId);
+    console.log({ commentObj });
+    if (commentObj.user.toString() !== user.toString())
+      throw new HttpException('Forbidden', 403);
+    return await this.commentSchema.updateOne({
+      _id: commentObj._id,
+      comment: commentText,
+    });
   }
 }

@@ -11,7 +11,7 @@ import { PostsService } from './posts.service';
 import { PostDto } from './post.dto';
 import { CommentsService } from './comments/comments.service';
 import { Public } from 'src/public-strategy';
-import { User } from 'src/user.decorator';
+import { User, UserType } from 'src/user.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -28,14 +28,14 @@ export class PostsController {
 
   @Post()
   @UsePipes(new ValidationPipe())
-  addPost(@Body() post: PostDto, @User() user) {
-    return this.postService.addPost({ ...post, user });
+  addPost(@Body() post: PostDto, @User() user: UserType) {
+    return this.postService.addPost({ ...post, user: user._id });
   }
 
   @Get(':id')
-  getPostById(@Param('id') id: string) {
-    const Post = this.postService.getPostById(id);
-    const comments = this.commentService.getCommentsByPostId(id);
+  async getPostById(@Param('id') id: string) {
+    const Post = await this.postService.getPostById(id);
+    const comments = await this.commentService.getCommentsByPostId(id);
     return { ...Post, comments };
   }
 }

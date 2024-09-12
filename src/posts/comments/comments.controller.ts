@@ -12,6 +12,7 @@ import {
 import { CommentsService } from './comments.service';
 import { CommentDTO } from './Comment.dto';
 import { User } from 'src/user.decorator';
+import { UserFlatDoc } from 'src/schemas/user.schema';
 
 @Controller('posts/:id/comment')
 export class CommentsController {
@@ -26,7 +27,7 @@ export class CommentsController {
   addComment(
     @Param('id') postId: string,
     @Body() commentData: CommentDTO,
-    @User() user,
+    @User() user: UserFlatDoc,
   ) {
     return this.commentService.addComment(postId, { ...commentData, user });
   }
@@ -35,9 +36,9 @@ export class CommentsController {
   updateComment(
     @Param('commentId') commentId: string,
     @Body('comment') comment: string,
-    @User() user,
+    @User() user: UserFlatDoc,
   ) {
     if (!comment) throw new HttpException('comment cannot be empty', 400);
-    return this.commentService.updateCommentById(commentId, user, comment);
+    return this.commentService.updateCommentById(commentId, user._id, comment);
   }
 }
